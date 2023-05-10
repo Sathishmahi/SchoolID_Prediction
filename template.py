@@ -15,6 +15,8 @@ all_files_dir_list=[
     os.path.join(PROJECT_PATH,"all_models","__init__.py"),
     os.path.join(PROJECT_PATH,"all_csv"),
     os.path.join(PROJECT_PATH,"all_csv","__init__.py"),
+    os.path.join(PROJECT_PATH,"raw_csv_dir"),
+    os.path.join(PROJECT_PATH,"raw_csv_dir","__init__.py"),
     "init.sh",
     "setup.py",
     "ruuning_logs.log",
