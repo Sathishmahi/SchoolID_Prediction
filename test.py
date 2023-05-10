@@ -19,7 +19,7 @@ if __name__ == "__main__":
         li = t.predict_data(
             model_dir_path=Path(save_model_dir_path),
             duration_id=duration_id,
-            no_of_times_to_run=10,
+            no_of_times_to_run=no_of_times_to_run,
         )
         final_dict.update({f"DurationID_{duration_id}": li})
     t.write_json(json_file_path=out_json_file_path, content=final_dict)
