@@ -25,6 +25,19 @@ class ToReturnModel:
         pass
 
     def to_read_csv(self, csv_path: Path) -> pd.DataFrame:
+        """
+        to read csv file  
+
+        Args:
+            csv_path (Path): csv file path
+
+        Raises:
+            FileNotFoundError
+            e
+
+        Returns:
+            pd.DataFrame
+        """
         if not os.path.exists(csv_path):
             raise FileNotFoundError("file not found")
         else:
@@ -36,7 +49,21 @@ class ToReturnModel:
 
     def to_split_train_test(
         self, x: pd.DataFrame, y: pd.DataFrame, test_size: float = 0.15
-    ):
+    )->tuple:
+        """
+        to split data into train and test data
+
+        Args:
+            x (pd.DataFrame): input data
+            y (pd.DataFrame): output data
+            test_size (float, optional): test size - Defaults to 0.15.
+
+        Raises:
+            e: Exception
+
+        Returns:
+            tuple: tuple of data frame
+        """
         try:
             x_train, x_test, y_train, y_test = train_test_split(
                 x, y, test_size=test_size, random_state=100
@@ -48,6 +75,20 @@ class ToReturnModel:
     def to_split_data_based_duration_id(
         self, full_df: pd.DataFrame, duration_id: int
     ) -> pd.DataFrame:
+        """
+        to split data based on duration Id
+
+        Args:
+            full_df (pd.DataFrame): raw dataaframe
+            duration_id (int): duration id
+
+        Raises:
+            KeyError
+            e
+
+        Returns:
+            pd.DataFrame: splited dataframe
+        """
         try:
             return full_df[full_df[duration_idcolumn_name] == duration_id]
         except KeyError as e:
@@ -56,7 +97,17 @@ class ToReturnModel:
             raise e
 
     @staticmethod
-    def save_model(model, model_path: Path, log=True):
+    def save_model(model, model_path: Path, log=True)->None:
+        """
+            to save trained model 
+
+            Args:
+                model_path (Path): trained model path
+
+            Raises:
+                OSError 
+                e 
+        """
         try:
             with open(model_path, "wb") as pickle_file:
                 pickle.dump(model, pickle_file)
@@ -73,6 +124,19 @@ class ToReturnModel:
 
     @staticmethod
     def load_model(model_path: Path):
+        """
+        load extisting trained model
+
+        Args:
+            model_path (Path): trained model path
+
+        Raises:
+            FileNotFoundError 
+            e
+
+        Returns:
+            model: trained model
+        """
         try:
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"pickle file not found {model_path}")
@@ -84,6 +148,19 @@ class ToReturnModel:
 
     @staticmethod
     def to_check_dtypes(df: pd.DataFrame, convert_dtype: str = "int16") -> pd.DataFrame:
+        """
+        to check the dataframe's data dtypes and change to convert_dtype
+
+        Args:
+            df (pd.DataFrame): imput dataframe
+            convert_dtype (str, optional): Defaults to "int16".
+
+        Raises:
+            e: 
+
+        Returns:
+            pd.DataFrame: _description_
+        """
         try:
             column_name_with_dtype = {
                 column: convert_dtype
@@ -96,6 +173,18 @@ class ToReturnModel:
 
     @staticmethod
     def to_save_csv(df: pd.DataFrame, file_path: Path, log=True) -> None:
+        """
+        to save dataframe into csv file 
+
+        Args:
+            df (pd.DataFrame): input dataframe
+            file_path (Path): csv file path
+            log (bool, optional): Defaults to True.
+
+        Raises:
+            OSError: 
+            e: 
+        """
         try:
             if log:
                 logging.info(msg=f"successfully csv file saved {file_path}")
@@ -114,6 +203,22 @@ class ToReturnModel:
         no_of_times_to_run: int,
         data_point: str = "7-5-2023",
     ) -> list:
+        """
+        to predict data 
+
+        Args:
+            model_dir_path (Path): saved model dir path
+            duration_id (int): duration id
+            no_of_times_to_run (int): how many output to predict
+            data_point (str, optional): Defaults to "7-5-2023".
+
+        Raises:
+            FileNotFoundError
+            Exception
+
+        Returns:
+            list: predicted output
+        """
         if duration_id > 0 and duration_id <= 4:
             try:
                 model_name = f"{duration_idcolumn_name}_{duration_id}.pkl"
@@ -145,6 +250,19 @@ class ToReturnModel:
 
     @staticmethod
     def to_split_x_and_y(df: pd.DataFrame) -> tuple:
+        """
+        to split data into input and output data 
+
+        Args:
+            df (pd.DataFrame):input dataframe 
+
+        Raises:
+            KeyError
+            e
+
+        Returns:
+            tuple:tuple of dataframe
+        """
         try:
             x = df.drop(columns=[date_columns_name, duration_idcolumn_name, out_column_name])
             y = df[out_column_name]
@@ -161,7 +279,18 @@ class ToReturnModel:
         y_train: pd.DataFrame,
         y_test: pd.DataFrame,
     ):
-        # models=[RandomForestRegressor(),KNeighborsRegressor(),LGBMRegressor(),GradientBoostingRegressor(),DecisionTreeRegressor(),XGBRFRegressor()]
+        """
+        to train model
+
+        Args:
+            x_train (pd.DataFrame): input train data
+            x_test (pd.DataFrame): input test data
+            y_train (pd.DataFrame): output train data
+            y_test (pd.DataFrame): output test data
+
+        Raises:
+            e
+        """
         try:
             random_forest = RandomForestRegressor()
             random_forest.fit(x_train, y_train)
@@ -178,6 +307,18 @@ class ToReturnModel:
 
     @staticmethod
     def read_json(json_file_path: Path) -> dict:
+        """
+        to read json file
+
+        Args:
+            json_file_path (Path): existing json file path
+        Raises:
+            FileNotFoundError
+            Exception
+
+        Returns:
+            dict: json content
+        """
         if not os.path.exists(json_file_path):
             raise FileNotFoundError(f"jsonm file not found {json_file_path}")
         with open(json_file_path, "r") as json_file:
@@ -187,6 +328,13 @@ class ToReturnModel:
                 raise Exception(f"json file empty {json_file_path}")
 
     def write_json(self, json_file_path: Path, content: dict):
+        """
+        to write a content into json file
+
+        Args:
+            json_file_path (Path): json file path
+            content (dict): writing content
+        """
         if not os.path.exists(json_file_path):
             self._json_helper(json_file_path=json_file_path, content=content)
 
@@ -205,15 +353,30 @@ class ToReturnModel:
 
     @staticmethod
     def to_add_hour(df_duration: pd.DataFrame) -> pd.DataFrame:
-        df_duration["year"] = df_duration[date_columns_name].dt.year
-        df_duration["day"] = df_duration[date_columns_name].dt.day
-        df_duration["month"] = df_duration[date_columns_name].dt.month
-        test_df = pd.DataFrame()
-        dataset_dict = dict()
-        for group, data in df_duration.groupby("month"):
-            data["hour"] = list(range(1, len(data) + 1))
-            test_df = pd.concat((test_df, data))
-        return test_df
+        """
+        to add columns[day,month,hour] into dataframe
+
+        Args:
+            df_duration (pd.DataFrame): dur
+            ation dataframe
+
+        Raises:
+            e: _description_
+
+        Returns:
+            pd.DataFrame: _description_
+        """
+        try:
+            df_duration["year"] = df_duration[date_columns_name].dt.year
+            df_duration["day"] = df_duration[date_columns_name].dt.day
+            df_duration["month"] = df_duration[date_columns_name].dt.month
+            test_df = pd.DataFrame()
+            for group, data in df_duration.groupby("month"):
+                data["hour"] = list(range(1, len(data) + 1))
+                test_df = pd.concat((test_df, data))
+            return test_df
+        except Exception as e:
+            raise e
 
     def combine_all(
         self,
@@ -222,6 +385,18 @@ class ToReturnModel:
         save_csv_dir_path: Path,
         json_file_path: Path,
     ):
+        """
+        combine all functions
+
+        Args:
+            csv_path (Path): data file path
+            save_model_dir_path (Path): all stored models dir
+            save_csv_dir_path (Path): all stored csv dir
+            json_file_path (Path): score json file path
+
+        Raises:
+            e
+        """
         try:
             score_dict = dict()
             df = self.to_read_csv(csv_path=csv_path)
