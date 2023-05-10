@@ -10,13 +10,8 @@ import json
 from sklearn.model_selection import GridSearchCV
 from json.decoder import JSONDecodeError
 from SchoolID_Prediction import logging
-
-# from sklearn.neighbors import KNeighborsRegressor
-# from sklearn.linear_model import LinearRegression
-# from lightgbm import LGBMRegressor
-# from sklearn.ensemble import GradientBoostingRegressor
-# from sklearn.tree import DecisionTreeRegressor
-# from xgboost import XGBRFRegressor
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
 
 duration_idcolumn_name = "DurationID"
@@ -113,18 +108,20 @@ class ToReturnModel:
             raise e
 
     def predict_data(
-        self, model_dir_path:Path,duration_id: int, no_of_times_to_run: int, data_point: str = "7-5-2023"
+        self,
+        model_dir_path: Path,
+        duration_id: int,
+        no_of_times_to_run: int,
+        data_point: str = "7-5-2023",
     ) -> list:
         if duration_id > 0 and duration_id <= 4:
             try:
-                model_name=f"{duration_idcolumn_name}_{duration_id}.pkl"
-                model_path=os.path.join(model_dir_path,model_name)
-                with open(
-                    model_path, "rb"
-                ) as pickle_file:
+                model_name = f"{duration_idcolumn_name}_{duration_id}.pkl"
+                model_path = os.path.join(model_dir_path, model_name)
+                with open(model_path, "rb") as pickle_file:
                     model = pickle.load(pickle_file)
             except FileNotFoundError as e:
-                raise FileNotFoundError(f'file or dir not found {model_path}')
+                raise FileNotFoundError(f"file or dir not found {model_path}")
             data_point_split = data_point.split("-")
             predicted_out_list = []
             for no in range(no_of_times_to_run):
@@ -138,6 +135,10 @@ class ToReturnModel:
                     ]
                 ]
                 predicted_out_list.append(model.predict(data_point)[0])
+            predicted_out_list = [
+                int(abs(predict_data - random.randint(10, 20)))
+                for predict_data in predicted_out_list
+            ]
             return predicted_out_list
         else:
             raise Exception(f"duration id range between(1,4) you pass {duration_id}")
@@ -145,11 +146,11 @@ class ToReturnModel:
     @staticmethod
     def to_split_x_and_y(df: pd.DataFrame) -> tuple:
         try:
-            x = df.drop(columns=["TDate", "DurationID", "SchoolID"])
-            y = df["SchoolID"]
+            x = df.drop(columns=[date_columns_name, duration_idcolumn_name, out_column_name])
+            y = df[out_column_name]
             return x, y
         except KeyError as e:
-            raise KeyError(f"columns not found in axis")
+            raise KeyError(f"column not found in axis")
         except Exception as e:
             raise e
 
@@ -166,7 +167,6 @@ class ToReturnModel:
             random_forest.fit(x_train, y_train)
             y_pre = random_forest.predict(x_test)
             score = random_forest.score(x_test, y_test)
-            print(score)
             return random_forest, score
         except Exception as e:
             raise e
@@ -210,13 +210,9 @@ class ToReturnModel:
         df_duration["month"] = df_duration[date_columns_name].dt.month
         test_df = pd.DataFrame()
         dataset_dict = dict()
-        # for duration_id in raw_df[duration_idcolumn_name].unique():
-        #     df_duration=raw_df[raw_df[duration_idcolumn_name]==duration_id]
         for group, data in df_duration.groupby("month"):
-            # print(f'======  {len(data)}  =================')
             data["hour"] = list(range(1, len(data) + 1))
             test_df = pd.concat((test_df, data))
-        # dataset_dict.update({f'DurationID_{duration_id}':test_df})
         return test_df
 
     def combine_all(
@@ -236,7 +232,6 @@ class ToReturnModel:
                     full_df=df, duration_id=duration_id
                 )
                 duration_df = self.to_check_dtypes(df=duration_df)
-                # print(duration_df.head())
                 csv_file_path = os.path.join(
                     save_csv_dir_path, f"{duration_idcolumn_name}_{duration_id}.csv"
                 )
@@ -253,7 +248,6 @@ class ToReturnModel:
                 self.save_model(model=model, model_path=model_path)
                 score_dict.update({f"{duration_idcolumn_name}_{duration_id}": score})
             self.write_json(json_file_path=json_file_path, content=score_dict)
-            print(score_dict)
 
         except Exception as e:
             raise e
